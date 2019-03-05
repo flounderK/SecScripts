@@ -15,13 +15,15 @@ cp /etc/ld.so.cache $base/etc/
 cp /etc/ld.so.conf $base/etc/
 cp /etc/nsswitch.conf $base/etc/
 cp /etc/hosts $base/etc/
+cp /bin/{ls,bash,cat} $base/bin/
 cp /usr/bin/{ls,bash,cat} $base/usr/bin/ 
 
 # copy the deps for your binaries 
-binpath=$(ldd /bin/{ls,bash,cat} | grep -Po ".+(?= =>)" | awk '{print $1}' | xargs whereis | awk '{print $2}')
-for i in $binpath
+for i in $(ldd /bin/{ls,bash,cat} | grep -Po ".+(?= =>)" | awk '{print $1}' | xargs whereis | grep -Po "(?<=: ).+" | tr "\r\n" " ")
 do
 	cp --parents $i $base
+	cp $i $base/lib
+	cp $i $base/lib64
 done
 
 #useradd --shell "$base/usr/bin/bash" --root "$base" "$1"
