@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-if [ "$#" -ne 4]
+if [ "$#" -ne 4 ]
 then
 	echo "Usage: $0 <hostname/ip> <username> <password> </path/to/pub/key>"
 	exit 1
