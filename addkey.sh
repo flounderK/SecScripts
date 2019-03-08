@@ -77,7 +77,7 @@ install_key "$IPADDRESS" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
 
 usage ()
 {
-	echo "Usage: $0 <hostname/ip> <username> <password> </path/to/pub/key>"
+	echo "Usage: $0 <-a|--ipaddress> <-u|--username> <-p|--password> <-k|--public-key> [[-i|--host-file] [-c|--cred-file]]"
 	exit 1
 }
 
@@ -91,7 +91,7 @@ install_key ()
 	fi
 
 	pubkey=$(cat $4)
-	sshpass -p "$3" ssh -oStrictHostKeyChecking=no -tt -T $2@$1 "echo '$pubkey' >> ~/.ssh/authorized_keys"
+	sshpass -p "$3" ssh -oStrictHostKeyChecking=no -tt -T $2@$1 "echo '$pubkey' >> ~/.ssh/authorized_keys" 2> /dev/null
 }
 
 install_key_multiple_hosts ()
