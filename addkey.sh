@@ -190,6 +190,26 @@ then
 	exit 0
 fi
 
+if [ -z $IPADDRESS ]
+then
+	IPADDRESS=$1
+fi
+
+if [ -z $USERNAME ]
+then
+	USERNAME=$2
+fi
+
+if [ -z $PASSWORD ]
+then
+	PASSWORD=$3
+fi
+
+if [ -z $PUB_KEY_PATH ]
+then
+	PUB_KEY_PATH=$4
+fi
+
 install_key "$IPADDRESS" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
 
 
