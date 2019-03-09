@@ -1,80 +1,5 @@
 #!/usr/bin/env sh
 
-if [ "$#" -eq 0 ]
-then
-	usage
-fi
-
-POSITIONAL=()
-while [[ $# -gt 0 ]]
-do
-	key="$1"
-
-	case $key in 
-		-a|--ipaddress)
-		IPADDRESS="$2"
-		shift
-		shift
-		;;
-		-u|--username)
-		USERNAME="$2"
-		shift
-		shift
-		;;
-		-p|--password)
-		PASSWORD="$2"
-		shift
-		shift
-		;;
-		-k|--public-key)
-		PUB_KEY_PATH="$2"
-		shift
-		shift
-		;;
-		-i|--host-file)
-		HOST_FILE="$2"
-		shift
-		shift
-		;;
-		-c|--cred-file)
-		CRED_FILE="$2"
-		shift
-		shift
-		;;
-		--default)
-		DEFAULT=YES
-		shift
-		;;
-		*)
-		POSITIONAL+=("$1")
-		shift
-		;;
-	esac
-done
-set -- "${POSITIONAL[@]}"
-# I'll probably get around to positional args eventually
-
-if [ -n $HOST_FILE ] && [ -n $CRED_FILE ]
-then 
-	install_key_multiple_users_multiple_hosts "$HOST_FILE" "$CRED_FILE" "$PUB_KEY_PATH"
-	exit 0
-fi
-
-
-if [ -n $HOST_FILE ]
-then
-	install_key_multiple_hosts "$HOST_FILE" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
-	exit 0
-fi
-
-if [ -n $CRED_FILE ]
-then
-	install_key_multiple_users "$IPADDRESS" "$CRED_FILE" "$PUB_KEY_PATH"
-	exit 0
-fi
-
-install_key "$IPADDRESS" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
-
 usage ()
 {
 	echo "Usage: $0 <-a|--ipaddress> <-u|--username> <-p|--password> <-k|--public-key> [[-i|--host-file] [-c|--cred-file]]"
@@ -159,5 +84,80 @@ install_key_multiple_users_multiple_hosts ()
 	done
 
 }
+if [ "$#" -eq 0 ]
+then
+	usage
+fi
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+	key="$1"
+
+	case $key in 
+		-a|--ipaddress)
+		IPADDRESS="$2"
+		shift
+		shift
+		;;
+		-u|--username)
+		USERNAME="$2"
+		shift
+		shift
+		;;
+		-p|--password)
+		PASSWORD="$2"
+		shift
+		shift
+		;;
+		-k|--public-key)
+		PUB_KEY_PATH="$2"
+		shift
+		shift
+		;;
+		-i|--host-file)
+		HOST_FILE="$2"
+		shift
+		shift
+		;;
+		-c|--cred-file)
+		CRED_FILE="$2"
+		shift
+		shift
+		;;
+		--default)
+		DEFAULT=YES
+		shift
+		;;
+		*)
+		POSITIONAL+=("$1")
+		shift
+		;;
+	esac
+done
+set -- "${POSITIONAL[@]}"
+# I'll probably get around to positional args eventually
+
+if [ -n $HOST_FILE ] && [ -n $CRED_FILE ]
+then 
+	install_key_multiple_users_multiple_hosts "$HOST_FILE" "$CRED_FILE" "$PUB_KEY_PATH"
+	exit 0
+fi
+
+
+if [ -n $HOST_FILE ]
+then
+	install_key_multiple_hosts "$HOST_FILE" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
+	exit 0
+fi
+
+if [ -n $CRED_FILE ]
+then
+	install_key_multiple_users "$IPADDRESS" "$CRED_FILE" "$PUB_KEY_PATH"
+	exit 0
+fi
+
+install_key "$IPADDRESS" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
+
 
 # ssh-keygen -t rsa -b 4096 -f <file> -N ""
