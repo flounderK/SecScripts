@@ -52,11 +52,11 @@ do
 	esac
 done
 set -- "${POSITIONAL[@]}"
-
+# I'll probably get around to positional args eventually
 
 if [ -n $HOST_FILE ] && [ -n $CRED_FILE ]
 then 
-	echo ""
+	install_key_multiple_users_multiple_hosts "$HOST_FILE" "$CRED_FILE" "$PUB_KEY_PATH"
 	exit 0
 fi
 
@@ -69,7 +69,7 @@ fi
 
 if [ -n $CRED_FILE ]
 then
-	echo ""
+	install_key_multiple_users "$IPADDRESS" "$CRED_FILE" "$PUB_KEY_PATH"
 	exit 0
 fi
 
@@ -119,9 +119,45 @@ install_key_multiple_users ()
 		exit 1
 	fi
 		
-	
+	OIFS=$IFS
+	IFS=$'\n'
+	for line in $(cat $2)
+	do
+		IFS=$OIFS
+		arr=($line)
+		install_key "$1" "${arr[0]}" "${arr[1]}" "$4"
+	done
 }
 
+install_key_multiple_users_multiple_hosts ()
+{
+	# who says brute force administration isn't valid?
+	# usage: <host file list> </path/to/cred/file> </path/to/pub/key>
+	
+	if [ ! -f $1 ] 
+	then
+		echo "Host list file does not exist"
+		exit 1
+	fi
 
+	if [ ! -f $2 ]
+	then
+		echo "Cred file does not exist"
+		exit 1
+	fi
+	echo "y'ought'n't've done that, but ok. Brute force it is"
+	for host in $(cat $1)
+	do
+		OIFS=$IFS
+		IFS=$'\n'
+		for line in $(cat $2)
+		do
+			IFS=$OIFS
+			arr=($line)
+			install_key "$host" "${arr[0]}" "${arr[1]}" "$3"
+		done
+	done
+
+}
 
 # ssh-keygen -t rsa -b 4096 -f <file> -N ""
