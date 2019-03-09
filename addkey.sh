@@ -84,6 +84,28 @@ install_key_multiple_users_multiple_hosts ()
 	done
 
 }
+
+install_key_known_users_and_hosts ()
+{
+	# usage: <infofile> </path/to/pub/key>
+	# format: "<host> <username> <password>"
+
+	if [ ! -f $1 ]
+	then
+		echo "Info file does not exist"
+		exit 1
+	fi
+		
+	OIFS=$IFS
+	IFS=$'\n'
+	for line in $(cat $1)
+	do
+		IFS=$OIFS
+		arr=($line)
+		install_key "${arr[0]}" "${arr[1]}" "${arr[2]}" "$2"
+	done
+}
+
 if [ "$#" -eq 0 ]
 then
 	usage
@@ -125,6 +147,11 @@ do
 		shift
 		shift
 		;;
+	    -f|--info-file)
+		INFO_FILE="$2"
+		shift
+		shift
+		;;
 		--default)
 		DEFAULT=YES
 		shift
@@ -137,6 +164,12 @@ do
 done
 set -- "${POSITIONAL[@]}"
 # I'll probably get around to positional args eventually
+
+if [ -n $INFO_FILE ]
+then
+	install_key_known_users_and_hosts "$INFO_FILE" "$PUB_KEY_PATH"
+	exit 0
+fi
 
 if [ -n $HOST_FILE ] && [ -n $CRED_FILE ]
 then 
