@@ -9,20 +9,20 @@ usage ()
 install_key ()
 {
 	# Usage: <hostname/ip> <username> <password> </path/to/pub/key>
-	if [ ! -f $4 ]
+	if [ ! -f "$4" ]
 	then
 		echo "Public key file does not not exist"
 		exit 1
 	fi
 
 	pubkey=$(cat $4)
-	sshpass -p "$3" ssh -oStrictHostKeyChecking=no -tt -T $2@$1 "echo '$pubkey' >> ~/.ssh/authorized_keys" 2> /dev/null
+	sshpass -p "$3" ssh -oStrictHostKeyChecking=no -tt -T "$2@$1" "echo '$pubkey' >> ~/.ssh/authorized_keys" 2> /dev/null
 }
 
 install_key_multiple_hosts ()
 {
 	# Usage: <host list file> <username> <password> </path/to/pub/key>
-	if [ ! -f $1 ] 
+	if [ ! -f "$1" ] 
 	then
 		echo "Host list file does not exist"
 		exit 1
@@ -38,7 +38,7 @@ install_key_multiple_users ()
 {
 	# Usage: <hostname/ip> </path/to/cred/file> </path/to/pub/key>
 	# format: "username password"
-	if [ ! -f $2 ]
+	if [ ! -f "$2" ]
 	then
 		echo "Cred file does not exist"
 		exit 1
@@ -59,13 +59,13 @@ install_key_multiple_users_multiple_hosts ()
 	# who says brute force administration isn't valid?
 	# usage: <host file list> </path/to/cred/file> </path/to/pub/key>
 	
-	if [ ! -f $1 ] 
+	if [ ! -f "$1" ] 
 	then
 		echo "Host list file does not exist"
 		exit 1
 	fi
 
-	if [ ! -f $2 ]
+	if [ ! -f "$2" ]
 	then
 		echo "Cred file does not exist"
 		exit 1
@@ -164,52 +164,49 @@ do
 done
 set -- "${POSITIONAL[@]}"
 # I'll probably get around to positional args eventually
-
-if [ -n $INFO_FILE ]
+if [ -n "$INFO_FILE" ]
 then
 	install_key_known_users_and_hosts "$INFO_FILE" "$PUB_KEY_PATH"
 	exit 0
 fi
 
-if [ -n $HOST_FILE ] && [ -n $CRED_FILE ]
+if [ -n "$HOST_FILE" ] && [ -n "$CRED_FILE" ]
 then 
 	install_key_multiple_users_multiple_hosts "$HOST_FILE" "$CRED_FILE" "$PUB_KEY_PATH"
 	exit 0
 fi
 
 
-if [ -n $HOST_FILE ]
+if [ -n "$HOST_FILE" ]
 then
 	install_key_multiple_hosts "$HOST_FILE" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
 	exit 0
 fi
 
-if [ -n $CRED_FILE ]
+if [ -n "$CRED_FILE" ]
 then
 	install_key_multiple_users "$IPADDRESS" "$CRED_FILE" "$PUB_KEY_PATH"
 	exit 0
 fi
-
-if [ -z $IPADDRESS ]
+if [ -z "$IPADDRESS" ]
 then
 	IPADDRESS=$1
 fi
 
-if [ -z $USERNAME ]
+if [ -z "$USERNAME" ]
 then
 	USERNAME=$2
 fi
 
-if [ -z $PASSWORD ]
+if [ -z "$PASSWORD" ]
 then
 	PASSWORD=$3
 fi
 
-if [ -z $PUB_KEY_PATH ]
+if [ -z "$PUB_KEY_PATH" ]
 then
 	PUB_KEY_PATH=$4
 fi
-
 install_key "$IPADDRESS" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
 
 
