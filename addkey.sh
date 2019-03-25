@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
 usage ()
 {
@@ -16,7 +16,13 @@ install_key ()
 	fi
 
 	pubkey=$(cat $4)
-	sshpass -p "$3" ssh -oStrictHostKeyChecking=no -tt -T "$2@$1" "echo '$pubkey' >> ~/.ssh/authorized_keys" 2> /dev/null
+	#echo "$pubkey"
+	echo "$1"
+	#echo "$2"
+	#echo "$3"
+	#sshpass -p "$3" ssh -p 22 -oStrictHostKeyChecking=no -tt $(echo "$2@$1") "echo '$pubkey' >> ~/.ssh/authorized_keys"# 2> /dev/null
+	sshpass -p "$3" ssh -p 22 -oStrictHostKeyChecking=no $(echo "$2@$1") "$(echo "echo \"$pubkey\" >> ~/.ssh/authorized_keys")" & # 2> /dev/null
+	echo "done with sshstuff"
 }
 
 install_key_multiple_hosts ()
