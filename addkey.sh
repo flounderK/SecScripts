@@ -16,13 +16,8 @@ install_key ()
 	fi
 
 	pubkey=$(cat $4)
-	#echo "$pubkey"
-	echo "$1"
-	#echo "$2"
-	#echo "$3"
-	#sshpass -p "$3" ssh -p 22 -oStrictHostKeyChecking=no -tt $(echo "$2@$1") "echo '$pubkey' >> ~/.ssh/authorized_keys"# 2> /dev/null
-	sshpass -p "$3" ssh -p 22 -oStrictHostKeyChecking=no $(echo "$2@$1") "$(echo "echo \"$pubkey\" >> ~/.ssh/authorized_keys")" & # 2> /dev/null
-	echo "done with sshstuff"
+	#echo "Trying: $1"
+	sshpass -p "$3" ssh -p 22 -oStrictHostKeyChecking=no $(echo "$2@$1") "$(echo "echo \"$pubkey\" >> ~/.ssh/authorized_keys")" 2> /dev/null && echo "$2@$1" &
 }
 
 install_key_multiple_hosts ()
@@ -36,7 +31,7 @@ install_key_multiple_hosts ()
 
 	for host in $(cat $1)
 	do
-		install_key "$host" "$2" "$3" "$4"
+		install_key "$host" "$2" "$3" "$4" "$5"
 	done
 }
 
@@ -56,7 +51,7 @@ install_key_multiple_users ()
 	do
 		IFS=$OIFS
 		arr=($line)
-		install_key "$1" "${arr[0]}" "${arr[1]}" "$4"
+		install_key "$1" "${arr[0]}" "${arr[1]}" "$4" "$5"
 	done
 }
 
@@ -85,7 +80,7 @@ install_key_multiple_users_multiple_hosts ()
 		do
 			IFS=$OIFS
 			arr=($line)
-			install_key "$host" "${arr[0]}" "${arr[1]}" "$3"
+			install_key "$host" "${arr[0]}" "${arr[1]}" "$3" "$4"
 		done
 	done
 
@@ -108,8 +103,13 @@ install_key_known_users_and_hosts ()
 	do
 		IFS=$OIFS
 		arr=($line)
-		install_key "${arr[0]}" "${arr[1]}" "${arr[2]}" "$2"
+		install_key "${arr[0]}" "${arr[1]}" "${arr[2]}" "$2" "$3"
 	done
+}
+
+display_results ()
+{
+	cat $1
 }
 
 if [ "$#" -eq 0 ]
@@ -169,29 +169,34 @@ do
 	esac
 done
 set -- "${POSITIONAL[@]}"
+TEMP_FILE=$(mktemp)
 # I'll probably get around to positional args eventually
 if [ -n "$INFO_FILE" ]
 then
-	install_key_known_users_and_hosts "$INFO_FILE" "$PUB_KEY_PATH"
+	install_key_known_users_and_hosts "$INFO_FILE" "$PUB_KEY_PATH" "$TEMP_FILE"
+	display_results "$TEMP_FILE"
 	exit 0
 fi
 
 if [ -n "$HOST_FILE" ] && [ -n "$CRED_FILE" ]
 then 
-	install_key_multiple_users_multiple_hosts "$HOST_FILE" "$CRED_FILE" "$PUB_KEY_PATH"
+	install_key_multiple_users_multiple_hosts "$HOST_FILE" "$CRED_FILE" "$PUB_KEY_PATH" "$TEMP_FILE"
+	display_results "$TEMP_FILE"
 	exit 0
 fi
 
 
 if [ -n "$HOST_FILE" ]
 then
-	install_key_multiple_hosts "$HOST_FILE" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
+	install_key_multiple_hosts "$HOST_FILE" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH" "$TEMP_FILE"
+	display_results "$TEMP_FILE"
 	exit 0
 fi
 
 if [ -n "$CRED_FILE" ]
 then
-	install_key_multiple_users "$IPADDRESS" "$CRED_FILE" "$PUB_KEY_PATH"
+	install_key_multiple_users "$IPADDRESS" "$CRED_FILE" "$PUB_KEY_PATH" "$TEMP_FILE"
+	display_results "$TEMP_FILE"
 	exit 0
 fi
 if [ -z "$IPADDRESS" ]
@@ -213,7 +218,7 @@ if [ -z "$PUB_KEY_PATH" ]
 then
 	PUB_KEY_PATH=$4
 fi
-install_key "$IPADDRESS" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH"
+install_key "$IPADDRESS" "$USERNAME" "$PASSWORD" "$PUB_KEY_PATH" "$TEMP_FILE"
 
-
+display_results "$TEMP_FILE"
 # ssh-keygen -t rsa -b 4096 -f <file> -N ""
